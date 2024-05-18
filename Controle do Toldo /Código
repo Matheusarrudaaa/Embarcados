@@ -1,0 +1,135 @@
+// C++ code
+#include <Servo.h>
+#include <LiquidCrystal.h> //Inclusão da Biblioteca
+
+LiquidCrystal lcd(12, 11, 10, 5, 4, 3, 2);
+
+int pinFoto = A5;
+int pinTemp = A4;
+int pinUmid = A3;
+int pinServo = 7;
+
+int Foto = 0;
+int Temp = 0;
+int Umid = 0;
+float ind_f = 0;
+
+int Tlim = 25;
+int Llim = 860;
+int Ulim = 675;
+
+Servo servo;
+int angulo = 0;
+  
+void setup()
+{
+  Serial.begin(9600);
+  pinMode(pinServo, OUTPUT);
+  pinMode(pinFoto, INPUT);
+  pinMode(pinTemp, INPUT);
+  pinMode(pinUmid, INPUT);
+  servo.attach(pinServo);
+
+
+  lcd.begin(16, 2);//Colunas, linhas. Use 16,2 para display LCD 16x2
+  lcd.clear();// Inicializa o display com uma tela vazia
+  /*lcd.setCursor(0, 0);//Posiciona o cursor na coluna 0, linha 0 (primeira linha)
+  lcd.print("Testando LCD");//Escreve o texto desejado
+
+  lcd.setCursor(0, 1);//Posiciona o cursor para a coluna 0, linha 1 (segunda linha)
+  lcd.print("Casa da Robotica");*/
+  
+}
+
+void loop()
+{
+  //luminosidade
+  Foto = map(analogRead(pinFoto), 344, 1017, 1017, 344);
+  Serial.print("Luminosidade: ");
+  Serial.println(Foto);
+  
+  //Temperatura
+  Temp = map(((analogRead(pinTemp) - 20) * 3.04), 0, 1023, -40, 125);
+  Serial.print("temperatura: ");
+  Serial.println(Temp);
+
+  
+  //Umidade
+  Umid = analogRead(pinUmid);
+  Serial.print("Umidade: ");
+  Serial.println(Umid);
+  Serial.print("\n");
+  Serial.print("\n");
+  
+  delay(1000);
+  
+  // Cálculo índice de fechamento toldo
+
+  ind_f = ((-1) *0.4*(Umid / Ulim )) + 0.4*(Foto / Llim) + 0.2*(Temp / Tlim);
+
+  Serial.print(ind_f);
+  Serial.print("\n");
+  
+  // Clima muito quente e luminoso -> 0.6
+  // Clima muito frio(15 graus) e Chuvoso - > 0
+  // Clima normal Muita luz e Muita umidade -> 0.2
+  
+  if(ind_f < 0 ){
+    angulo = map(Umid, 675, 876, 0, 90);  
+    servo.write(angulo);
+    
+  }
+  else if(ind_f >= 0.4 ){
+
+   angulo = map(Foto ,860, 1017, 0, 90);  
+   servo.write(angulo);
+  }
+ else 
+   servo.write(0);
+
+  //DYSPLAY LCD
+  delay(1000);
+  
+  // Temperatura LDysplay
+  lcd.setCursor(0, 0);//Posiciona o cursor na coluna 0, linha 0 (primeira linha)
+  lcd.print("Temperatura: ");
+  lcd.print(Temp);//Escreve o texto desejado
+  lcd.print("C");
+  
+  // Luminosidade Dysplay
+  lcd.setCursor(0, 1);//Posiciona o cursor para a coluna 0, linha 1 (segunda linha)
+  lcd.print("Lumin: ");
+  lcd.print(map(Foto, 344, 1017, 0, 100));//Escreve o texto desejado
+  lcd.print("%");
+ 
+  delay(1000);
+  lcd.clear();
+  
+  // Umidade Dysplay
+  lcd.setCursor(0, 0);//Posiciona o cursor para a coluna 0, linha 1 (segunda linha)
+  lcd.print("Umid: ");
+  lcd.print(map(Umid, 0, 876, 0, 100));//Escreve o texto desejado
+  lcd.print("%");
+  
+  //Estado do Toldo
+  if(angulo == 0){
+  lcd.setCursor(0, 1);
+  lcd.print("Fechado");
+  }
+  else if(angulo == 90){
+  lcd.setCursor(0, 1);
+  lcd.print("Aberto"); 
+  }
+  else{
+  lcd.setCursor(0, 1);
+  lcd.print("Intermediario"); 
+  }
+  
+  delay(1000);
+  lcd.clear();
+  
+  lcd.noDisplay();// Desliga Display:
+  //delay(500);
+  lcd.display();// Liga Display:
+  
+}
