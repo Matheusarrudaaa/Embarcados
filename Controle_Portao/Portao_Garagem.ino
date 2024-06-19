@@ -10,6 +10,7 @@ float distancia;
 int IN1 = 8;
 int IN2 = 9;
 
+int Foto = 0;
 dht DHT;
 
 LiquidCrystal_I2C lcd(0x27,16,2);  
@@ -28,7 +29,8 @@ void setup()
  pinMode (echo,INPUT);
 
  pinMode(A3, INPUT); //Pino dht
-
+ pinMode(A2, INPUT); //Pino fotoresistor
+  
   //Inicialização do LCD
   lcd.init();
   //Acender luz de fundo
@@ -103,7 +105,12 @@ float Ultra_soni(){
 
 void LCD(){
   
- DHT.read11(A3);
+  //luminosidade
+  Foto = map(analogRead(A2), 344, 1017, 1017, 344);
+  Serial.print("Luminosidade: ");
+  Serial.println(Foto);
+  
+  DHT.read11(A3);
 
   lcd.print("Umidade ");
   lcd.print(DHT.humidity);
@@ -115,8 +122,13 @@ void LCD(){
   lcd.clear();
 
   if(digitalRead(3) == 0){
+
     lcd.setCursor(0,0);
-  lcd.print("Portao Fechado");
+    lcd.print("Lumin: ");
+    lcd.print(Foto);
+    
+    lcd.setCursor(0,1);
+    lcd.print("Portao Fechado");
    delay(1000);
   lcd.clear();
   }
