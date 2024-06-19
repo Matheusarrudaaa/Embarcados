@@ -2,6 +2,7 @@
 #include <LiquidCrystal_I2C.h>
 #include <dht.h>
 
+//Leitura sensor ultrassônico
 int trig = 11;
 int echo = 10;
 float distancia;
@@ -11,14 +12,14 @@ int IN2 = 9;
 
 dht DHT;
 
-//Crear el objeto lcd  dirección  0x3F y 16 columnas x 2 filas
-LiquidCrystal_I2C lcd(0x27,16,2);  //
+LiquidCrystal_I2C lcd(0x27,16,2);  
   
 void setup()
 {
   //Define os pinos como saida
  pinMode(IN1, OUTPUT);
  pinMode(IN2, OUTPUT);
+  
  pinMode(2, INPUT_PULLUP); //Fim de Curso Esq (Aberto)
  pinMode(3, INPUT_PULLUP); //Fim de Curso Dir (Fechado)
  pinMode(4, INPUT_PULLUP); //Botão de acionamento
@@ -26,11 +27,11 @@ void setup()
  pinMode (trig, OUTPUT);
  pinMode (echo,INPUT);
 
- pinMode(A3, INPUT);
+ pinMode(A3, INPUT); //Pino dht
 
-  // Inicializar el LCD
+  //Inicialização do LCD
   lcd.init();
-  //Encender la luz de fondo.
+  //Acender luz de fundo
   lcd.backlight();
 
 Serial.begin(9600);
@@ -38,7 +39,7 @@ Serial.begin(9600);
   
 void loop()
 {
-    Serial.println(digitalRead(IN1));
+  //Serial.println(digitalRead(IN1));
   distancia = Ultra_soni();
   Controle_Portao(distancia);
   LCD();
@@ -101,6 +102,7 @@ float Ultra_soni(){
 }
 
 void LCD(){
+  
  DHT.read11(A3);
 
   lcd.print("Umidade ");
